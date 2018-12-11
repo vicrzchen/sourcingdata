@@ -60,9 +60,9 @@ class DBOperationBase:
                 logging.error(exce_info)
         pass
 
-    def update_record(self, query_conditions=None, update_data=None, record_type=None):
+    def update_record(self, query_conditions=None, update_data=None):
         if not(query_conditions is None or update_data is None):
-            record_set = self.get_all_records(record_type=record_type)
+            record_set = self.get_all_records(record_type=self.record_type)
             for i in query_conditions:
                 record_set = record_set.filter(i)
             if record_set.count() > 0:
@@ -102,8 +102,12 @@ class DBOperationBase:
             logging.error(exec_info)
         return all_records
 
-    def query_record(self, query_condition=None):
-
+    def query_record(self, query_conditions=None):
+        all_record = self.get_all_records(record_type=self.record_type)
+        if all_record and query_conditions is not None:
+            for i in query_conditions:
+                all_record = all_record.filter(i)
+        return all_record
         pass
 
 
@@ -112,6 +116,7 @@ class RequirementToReadDBOperation(DBOperationBase):
         super(RequirementToReadDBOperation, self).__init__(db_engine,
                                                            table_type_name='requirement_to_read',
                                                            data_struct_name='_RequirementToReadData')
+        self.record_type = RequirementToRead
         pass
 
     def insert_record(self, requirement_to_read_data: RequirementToRead=None, skip_duplicated_record=False):
@@ -124,20 +129,13 @@ class RequirementToReadDBOperation(DBOperationBase):
             super(RequirementToReadDBOperation, self).insert_record(requirement_to_read_data)
         pass
 
-    def query_record(self, query_conditions=None):
-        all_record = super(RequirementToReadDBOperation, self).get_all_records(record_type=RequirementToRead)
-        if all_record and query_conditions is not None:
-            for i in query_conditions:
-                all_record = all_record.filter(i)
-        return all_record
-    pass
-
 
 class SourcingAnnouncementToReadDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
         super(SourcingAnnouncementToReadDBOperation, self).__init__(db_engine,
                                                                     table_type_name='sourcing_announcement_to_read',
                                                                     data_struct_name='_SourcingAnnouncementToRead')
+        self.record_type = SourcingAnnouncementToRead
         pass
 
     def insert_record(self, sourcing_announcement_to_read_data: SourcingAnnouncementToRead=None,
@@ -151,21 +149,13 @@ class SourcingAnnouncementToReadDBOperation(DBOperationBase):
             super(SourcingAnnouncementToReadDBOperation, self).insert_record(sourcing_announcement_to_read_data)
         pass
 
-    def query_record(self, query_conditions=None):
-        all_record = super(SourcingAnnouncementToReadDBOperation, self)\
-            .get_all_records(record_type=SourcingAnnouncementToRead)
-        if all_record and query_conditions is not None:
-            for i in query_conditions:
-                all_record = all_record.filter(i)
-        return all_record
-    pass
-
 
 class WebsiteInfoDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
         super(WebsiteInfoDBOperation, self).__init__(db_engine,
                                                      table_type_name='website_info',
                                                      data_struct_name='_WebsiteInfo')
+        self.record_type = WebsiteInfo
         pass
 
     def insert_record(self, website_info_data: WebsiteInfo=None,
@@ -179,26 +169,13 @@ class WebsiteInfoDBOperation(DBOperationBase):
             super(WebsiteInfoDBOperation, self).insert_record(website_info_data)
         pass
 
-    def query_record(self, query_conditions=None):
-        all_record = super(WebsiteInfoDBOperation, self)\
-            .get_all_records(record_type=WebsiteInfo)
-        if all_record and query_conditions is not None:
-            for i in query_conditions:
-                all_record = all_record.filter(i)
-        return all_record
-
-    def update_record(self, query_conditions=None, update_data=None, record_type=None):
-        super(WebsiteInfoDBOperation, self).update_record(query_conditions=query_conditions,
-                                                          update_data=update_data,
-                                                          record_type=record_type)
-    pass
-
 
 class ProxyInfoDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
         super(ProxyInfoDBOperation, self).__init__(db_engine,
                                                    table_type_name='proxy_info',
                                                    data_struct_name='_ProxyInfo')
+        self.record_type = ProxyInfo
         pass
 
     def insert_record(self, proxy_info_data: ProxyInfo=None,
@@ -212,26 +189,13 @@ class ProxyInfoDBOperation(DBOperationBase):
             super(ProxyInfoDBOperation, self).insert_record(proxy_info_data)
         pass
 
-    def query_record(self, query_conditions=None):
-        all_record = super(ProxyInfoDBOperation, self)\
-            .get_all_records(record_type=ProxyInfo)
-        if all_record and query_conditions is not None:
-            for i in query_conditions:
-                all_record = all_record.filter(i)
-        return all_record
-
-    def update_record(self, query_conditions=None, update_data=None, record_type=None):
-        super(ProxyInfoDBOperation, self).update_record(query_conditions=query_conditions,
-                                                        update_data=update_data,
-                                                        record_type=record_type)
-    pass
-
 
 class ContractInfoToReadDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
         super(ContractInfoToReadDBOperation, self).__init__(db_engine,
                                                             table_type_name='contract_info_to_read',
                                                             data_struct_name='_ContractInfoToRead')
+        self.record_type = ContractInfoToRead
         pass
 
     def insert_record(self, contract_info_to_read_data: ContractInfoToRead=None,
@@ -244,12 +208,3 @@ class ContractInfoToReadDBOperation(DBOperationBase):
         if not(contract_info_to_read_data is None) and not is_duplicated_record:
             super(ContractInfoToReadDBOperation, self).insert_record(contract_info_to_read_data)
         pass
-
-    def query_record(self, query_conditions=None):
-        all_record = super(ContractInfoToReadDBOperation, self)\
-            .get_all_records(record_type=ContractInfoToRead)
-        if all_record and query_conditions is not None:
-            for i in query_conditions:
-                all_record = all_record.filter(i)
-        return all_record
-    pass

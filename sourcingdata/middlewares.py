@@ -151,8 +151,7 @@ class SourcingdataDownloaderMiddleware(object):
                     page_to_update = WebsiteInfo()
                     page_to_update.current_page_number = self.current_page
                     self.website_info_DB_operation.update_record(query_conditions=self.query_condition,
-                                                                 update_data=page_to_update,
-                                                                 record_type=WebsiteInfo)
+                                                                 update_data=page_to_update)
                     self.current_session_access_counter += 1
                     got_right_page = True
                 except Exception as excepinfo:
@@ -211,7 +210,7 @@ class SourcingdataDownloaderMiddleware(object):
         # 以下处理当前应该跳到第几页
         self.databaseConnection = DBKits()
         self.website_info_DB_operation = WebsiteInfoDBOperation(db_engine=self.databaseConnection)
-        self.query_condition = {WebsiteInfo.website_id == 5}
+        self.query_condition = {WebsiteInfo.website_id == 4}
         # self.query_condition = {WebsiteInfo.start_up_url == self.START_URL}
         self.query_result = self.website_info_DB_operation.query_record(query_conditions=self.query_condition)
         self.current_proxy: ProxyInfo = None

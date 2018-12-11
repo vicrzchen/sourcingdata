@@ -29,8 +29,7 @@ def update_website_info():
     query_conditions = {WebsiteInfo.start_up_url == website_data_to_query.start_up_url and
                         WebsiteInfo.website_crawl_scope == website_data_to_query.website_crawl_scope}
     database_operation.update_record(record_type=WebsiteInfo,
-                                     update_data=website_data_to_update,
-                                     query_conditions=query_conditions)
+                                     update_data=website_data_to_update)
 
 
 def read_proxy_info():
@@ -62,3 +61,10 @@ def make_website_info_contract():
     database_connection = DBKits()
     database_operation = WebsiteInfoDBOperation(db_engine=database_connection)
     database_operation.insert_record(website_info_data=website_data)
+
+def test_db():
+    conditions = {ProxyInfo.status == 1}
+    database_connection = DBKits()
+    proxy_operation = ProxyInfoDBOperation(db_engine=database_connection)
+    print(proxy_operation.query_record(conditions).count())
+    pass

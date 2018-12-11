@@ -26,8 +26,7 @@ def mark_used_proxy(proxy_id=None):
     proxy_data_for_update = ProxyInfo()
     proxy_data_for_update.last_used_time = datetime.now()
     database_operation.update_record(query_conditions=query_conditions,
-                                     update_data=proxy_data_for_update,
-                                     record_type=ProxyInfo)
+                                     update_data=proxy_data_for_update)
     pass
 
 
@@ -38,8 +37,7 @@ def mark_unavailable_proxy(proxy_id=None):
     proxy_data_for_update = ProxyInfo()
     proxy_data_for_update.status = 1
     database_operation.update_record(query_conditions=query_conditions,
-                                     update_data=proxy_data_for_update,
-                                     record_type=ProxyInfo)
+                                     update_data=proxy_data_for_update)
     pass
 
 def reget_proxy():
