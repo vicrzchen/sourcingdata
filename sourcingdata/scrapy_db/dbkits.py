@@ -50,8 +50,14 @@ class DBOperationBase:
             pass
         pass
 
-    def insert_record(self, record_data=None):
-        if not(record_data is None):
+    def insert_record(self, record_data=None, skip_duplicated_record=False):
+
+        is_duplicated_record = False
+        if skip_duplicated_record:
+            # TODO: 需要判重
+            is_duplicated_record = False
+            pass
+        if not(record_data is None) and not is_duplicated_record:
             try:
                 new_row_data = self.map_record_to_row_data(record_data)
                 self._db_session.add(new_row_data)
@@ -119,16 +125,6 @@ class RequirementToReadDBOperation(DBOperationBase):
         self.record_type = RequirementToRead
         pass
 
-    def insert_record(self, requirement_to_read_data: RequirementToRead=None, skip_duplicated_record=False):
-        is_duplicated_record = False
-        if skip_duplicated_record:
-            # TODO: 需要判重
-            is_duplicated_record = False
-            pass
-        if not(requirement_to_read_data is None) and not is_duplicated_record:
-            super(RequirementToReadDBOperation, self).insert_record(requirement_to_read_data)
-        pass
-
 
 class SourcingAnnouncementToReadDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
@@ -136,17 +132,6 @@ class SourcingAnnouncementToReadDBOperation(DBOperationBase):
                                                                     table_type_name='sourcing_announcement_to_read',
                                                                     data_struct_name='_SourcingAnnouncementToRead')
         self.record_type = SourcingAnnouncementToRead
-        pass
-
-    def insert_record(self, sourcing_announcement_to_read_data: SourcingAnnouncementToRead=None,
-                      skip_duplicated_record=False):
-        is_duplicated_record = False
-        if skip_duplicated_record:
-            # TODO: 需要判重
-            is_duplicated_record = False
-            pass
-        if not(sourcing_announcement_to_read_data is None) and not is_duplicated_record:
-            super(SourcingAnnouncementToReadDBOperation, self).insert_record(sourcing_announcement_to_read_data)
         pass
 
 
@@ -158,17 +143,6 @@ class WebsiteInfoDBOperation(DBOperationBase):
         self.record_type = WebsiteInfo
         pass
 
-    def insert_record(self, website_info_data: WebsiteInfo=None,
-                      skip_duplicated_record=False):
-        is_duplicated_record = False
-        if skip_duplicated_record:
-            # TODO: 需要判重
-            is_duplicated_record = False
-            pass
-        if not(website_info_data is None) and not is_duplicated_record:
-            super(WebsiteInfoDBOperation, self).insert_record(website_info_data)
-        pass
-
 
 class ProxyInfoDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
@@ -176,17 +150,6 @@ class ProxyInfoDBOperation(DBOperationBase):
                                                    table_type_name='proxy_info',
                                                    data_struct_name='_ProxyInfo')
         self.record_type = ProxyInfo
-        pass
-
-    def insert_record(self, proxy_info_data: ProxyInfo=None,
-                      skip_duplicated_record=False):
-        is_duplicated_record = False
-        if skip_duplicated_record:
-            # TODO: 需要判重
-            is_duplicated_record = False
-            pass
-        if not(proxy_info_data is None) and not is_duplicated_record:
-            super(ProxyInfoDBOperation, self).insert_record(proxy_info_data)
         pass
 
 
@@ -198,13 +161,3 @@ class ContractInfoToReadDBOperation(DBOperationBase):
         self.record_type = ContractInfoToRead
         pass
 
-    def insert_record(self, contract_info_to_read_data: ContractInfoToRead=None,
-                      skip_duplicated_record=False):
-        is_duplicated_record = False
-        if skip_duplicated_record:
-            # TODO: 需要判重
-            is_duplicated_record = False
-            pass
-        if not(contract_info_to_read_data is None) and not is_duplicated_record:
-            super(ContractInfoToReadDBOperation, self).insert_record(contract_info_to_read_data)
-        pass

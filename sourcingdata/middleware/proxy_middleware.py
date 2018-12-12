@@ -40,6 +40,7 @@ def mark_unavailable_proxy(proxy_id=None):
                                      update_data=proxy_data_for_update)
     pass
 
+
 def reget_proxy():
     http = urllib3.PoolManager()
     try:
@@ -56,7 +57,7 @@ def reget_proxy():
                     proxy_info.proxy_type = 'http'
                     proxy_info.added_time = datetime.now()
                     proxy_info.status = 0
-                    database_operation.insert_record(proxy_info_data=proxy_info)
+                    database_operation.insert_record(proxy_info, skip_duplicated_record=False)
                     proxy_info = None
         else:
             return None

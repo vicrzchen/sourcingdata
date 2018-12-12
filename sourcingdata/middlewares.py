@@ -20,7 +20,8 @@ from sourcingdata.scrapy_db.constvalue import \
     START_URL_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
     START_URL_CONTRACT_INFO_TO_BE_READ,\
     TIME_INTERVAL_MIN_SECOND_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
-    TIME_INTERVAL_MAX_SECOND_SOURCING_ANNOUNCEMENT_TO_BE_READ
+    TIME_INTERVAL_MAX_SECOND_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
+    USE_PROXY
 from random import randint
 from sourcingdata.middleware.proxy_middleware import get_random_http_proxy, mark_unavailable_proxy, reget_proxy
 
@@ -230,11 +231,12 @@ class SourcingdataDownloaderMiddleware(object):
                 self.chrome_options = webdriver.ChromeOptions()
                 self.chrome_options.add_argument('disable-infobars')
                 prefs = {"profile.managed_default_content_settings.images": 2}
-                self.current_proxy = get_random_http_proxy()
-                proxy_address = 'http://%s:%s' %(self.current_proxy.proxy_ip, self.current_proxy.proxy_port)
-                if self.current_proxy is not None:
-                    proxy_str = "--proxy-server=%s" % proxy_address
-                    self.chrome_options.add_argument(proxy_str)
+                if USE_PROXY:
+                    self.current_proxy = get_random_http_proxy()
+                    proxy_address = 'http://%s:%s' %(self.current_proxy.proxy_ip, self.current_proxy.proxy_port)
+                    if self.current_proxy is not None:
+                        proxy_str = "--proxy-server=%s" % proxy_address
+                        self.chrome_options.add_argument(proxy_str)
                 self.chrome_options.add_experimental_option("prefs", prefs)
                 self.first_time_browse = True
                 self.browser = webdriver.Chrome(executable_path=
@@ -266,12 +268,9 @@ class SourcingdataDownloaderMiddleware(object):
     def close_browser(self, is_error=False):
         self.browser.close()
         self.browser = None
-        # TODO: 改回来
-        # if self.current_proxy is not None and is_error:
-        if self.current_proxy is not None:
+        if self.current_proxy is not None and USE_PROXY:
             mark_unavailable_proxy(proxy_id=self.current_proxy.proxy_id)
             reget_proxy()
-
             self.current_proxy = None
         self.chrome_options = None
 

@@ -14,7 +14,7 @@ def make_website_info():
     # 设置信息结束
     database_connection = DBKits()
     database_operation = WebsiteInfoDBOperation(db_engine=database_connection)
-    database_operation.insert_record(website_info_data=website_data)
+    database_operation.insert_record(website_data, skip_duplicated_record=True)
 
 def update_website_info():
     website_data_to_update = WebsiteInfo()
@@ -45,7 +45,7 @@ def read_proxy_info():
             proxy_info.proxy_type = 'http'
             proxy_info.added_time = datetime.now()
             proxy_info.status = 0
-            database_operation.insert_record(proxy_info_data=proxy_info)
+            database_operation.insert_record(proxy_info, skip_duplicated_record=False)
             proxy_info = None
 
 
@@ -53,14 +53,14 @@ def read_proxy_info():
 def make_website_info_contract():
     website_data = WebsiteInfo()
     # 设置信息
-    website_data.website_name = '广东省采购中心-省直-采购合同'
+    website_data.website_name = '广东省采购中心-省直-采购合同1'
     website_data.start_up_url = START_URL_CONTRACT_INFO_TO_BE_READ
     website_data.website_crawl_scope = 'gdgpo.gov.cn'
-    website_data.current_page_number = 6000
+    website_data.current_page_number = 16000
     # 设置信息结束
     database_connection = DBKits()
     database_operation = WebsiteInfoDBOperation(db_engine=database_connection)
-    database_operation.insert_record(website_info_data=website_data)
+    database_operation.insert_record(website_data, skip_duplicated_record=True)
 
 def test_db():
     conditions = {ProxyInfo.status == 1}

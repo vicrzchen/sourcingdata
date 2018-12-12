@@ -55,8 +55,8 @@ class GdgovdataSpider(scrapy.Spider):
                                            match_data.xpath('./a/@href')[0].extract())
             query_conditions = {SourcingAnnouncementToRead.project_url == url_data.project_url}
             if self.sourcing_announcement_to_read_DB_operation.query_record(query_conditions).count() == 0:
-                self.sourcing_announcement_to_read_DB_operation.insert_record(sourcing_announcement_to_read_data=
-                                                                              url_data)
+                self.sourcing_announcement_to_read_DB_operation.insert_record(url_data,
+                                                                              skip_duplicated_record=False)
             else:
                 stop_turn_page = False
             pass
@@ -82,7 +82,8 @@ class GdgovdataSpider(scrapy.Spider):
                                                match_data.xpath('.//td[8]/a/@href')[0].extract())
                 query_conditions = {RequirementToRead.url_to_read == url_data.url_to_read}
                 if self.require_to_read_DB_operation.query_record(query_conditions).count() == 0:
-                    self.require_to_read_DB_operation.insert_record(requirement_to_read_data=url_data)
+                    self.require_to_read_DB_operation.insert_record(url_data,
+                                                                    skip_duplicated_record=False)
         yield Request(response.url, callback=self.parse_requirement_to_read, dont_filter=True)
         pass
 
@@ -119,7 +120,8 @@ class GdgovdataSpider(scrapy.Spider):
                                                    match_data.xpath('.//td[9]/a/@href')[0].extract())
                     query_conditions = {ContractInfoToRead.url_to_read == url_data.url_to_read}
                     if self.contract_to_read_DB_operation.query_record(query_conditions).count() == 0:
-                        self.contract_to_read_DB_operation.insert_record(contract_info_to_read_data=url_data)
+                        self.contract_to_read_DB_operation.insert_record(url_data,
+                                                                         skip_duplicated_record=False)
                     else:
                         self.duplicate_record_qty += 1
                     if self.duplicate_record_qty > 200:

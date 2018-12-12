@@ -8,7 +8,7 @@ from sourcingdata.middleware.proxy_middleware import mark_used_proxy, mark_unava
     reget_proxy
 # make_website_info()
 # update_website_info()
-read_proxy_info()
+# read_proxy_info()
 # reget_proxy()
 # make_website_info_contract()
 # print(get_random_http_proxy())
