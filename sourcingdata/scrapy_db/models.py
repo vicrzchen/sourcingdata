@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, DateTime, String, text
+from sqlalchemy import Column, DateTime, String, text
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -19,6 +19,35 @@ class ContractInfoToRead(Base):
     contract_sign_date = Column(String(20))
     announce_date = Column(String(20))
     url_to_read = Column(String(1000))
+
+
+class ListItemsMap(Base):
+    __tablename__ = 'list_items_maps'
+
+    website_id = Column(INTEGER(64))
+    list_item_id = Column(INTEGER(64), primary_key=True, unique=True)
+    struct_member_name = Column(String(100))
+    trim_space = Column(TINYINT(1), server_default=text("'1'"))
+    trim_enter = Column(TINYINT(1), server_default=text("'1'"))
+    xpath_string = Column(String(200))
+    result_is_list = Column(TINYINT(1), server_default=text("'1'"))
+    list_index = Column(INTEGER(11), server_default=text("'0'"))
+    is_url = Column(TINYINT(1), server_default=text("'0'"))
+    is_abstract_url = Column(TINYINT(1), server_default=text("'0'"))
+
+
+class Nsfc(Base):
+    __tablename__ = 'nsfc'
+
+    nsfc_id = Column(INTEGER(34), primary_key=True, unique=True)
+    title = Column(String(1000))
+    approval_id = Column(String(20))
+    type = Column(String(100))
+    organization = Column(String(200))
+    pm = Column(String(100))
+    sponsor_fee = Column(String(20))
+    approval_year = Column(String(10))
+    keyword = Column(String(200))
 
 
 class ProxyInfo(Base):
@@ -74,6 +103,22 @@ class SourcingAnnouncementToRead(Base):
     read_flag = Column(TINYINT(1), server_default=text("'0'"))
 
 
+class SourcingPlansToRead(Base):
+    __tablename__ = 'sourcing_plans_to_read'
+
+    plans_id = Column(INTEGER(64), primary_key=True, unique=True)
+    purchasor = Column(String(200))
+    project_id = Column(String(100))
+    project_name = Column(String(1000))
+    goods_type = Column(String(100))
+    plan_purchasing_date = Column(String(20))
+    goods_qty = Column(INTEGER(100))
+    project_value = Column(String(100))
+    purchasing_method = Column(String(100))
+    progress_url = Column(String(1000))
+    detail_url = Column(String(1000))
+
+
 class Vendor(Base):
     __tablename__ = 'vendor'
 
@@ -94,3 +139,5 @@ class WebsiteInfo(Base):
     website_struct_type = Column(INTEGER(11), server_default=text("'0'"))
     website_crawl_scope = Column(String(1000))
     website_group_id = Column(INTEGER(64))
+    website_next_page_str = Column(String(1000))
+    website_goto_page_str = Column(String(1000))

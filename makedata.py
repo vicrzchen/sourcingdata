@@ -1,5 +1,8 @@
-from sourcingdata.scrapy_db.dbkits import DBKits, WebsiteInfoDBOperation, ProxyInfo, ProxyInfoDBOperation
-from sourcingdata.scrapy_db.models import WebsiteInfo
+from sourcingdata.scrapy_db.dbkits import DBKits, \
+    WebsiteInfoDBOperation,\
+    ProxyInfoDBOperation, \
+    ListItemsMapDBOperation
+from sourcingdata.scrapy_db.models import WebsiteInfo, ProxyInfo, ListItemsMap
 from datetime import datetime
 from sourcingdata.scrapy_db.constvalue import START_URL_CONTRACT_INFO_TO_BE_READ
 from sqlalchemy import DateTime
@@ -68,3 +71,39 @@ def test_db():
     proxy_operation = ProxyInfoDBOperation(db_engine=database_connection)
     print(proxy_operation.query_record(conditions).count())
     pass
+
+def make_website_items():
+    filename_test = './list_items_map.txt'
+    database_connection = DBKits()
+    database_operation = WebsiteInfoDBOperation(db_engine=database_connection)
+    line_count = 0
+    for file_content in open(filename_test, 'r').readlines():
+        if line_count > 0:
+            list_item = ListItemsMap()
+            list_item.website_id = int(file_content.split(',')[0])
+            if file_content.split(',')[1] == 'True':
+                list_item.result_is_list = True
+            else:
+                list_item.result_is_list = False
+            list_item.list_index = int(file_content.split(',')[2])
+            list_item.struct_member_name = file_content.split(',')[3]
+            list_item.xpath_string = file_content.split(',')[4]
+            if file_content.split(',')[5] == 'True':
+                list_item.trim_enter = True
+            else:
+                list_item.trim_enter = False
+            if file_content.split(',')[6] == 'True':
+                list_item.trim_space = True
+            else:
+                list_item.trim_space = False
+            if file_content.split(',')[7] == 'True':
+                list_item.is_url = True
+            else:
+                list_item.is_url = False
+            if file_content.split(',')[8] == 'True':
+                list_item.is_abstract_url = True
+            else:
+                list_item.is_abstract_url = False
+            database_operation.insert_record(record_data=list_item, skip_duplicated_record=False)
+            list_item = None
+        line_count += 1

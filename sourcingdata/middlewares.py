@@ -13,17 +13,13 @@ from logging import getLogger, error
 from time import sleep
 from sourcingdata.scrapy_db.dbkits import DBKits, WebsiteInfoDBOperation, WebsiteInfo, ProxyInfo
 from sourcingdata.scrapy_db.constvalue import \
-    NEXT_PAGE_OF_REQUIREMENT_TO_BE_READ,\
-    NEXT_PAGE_OF_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
-    NEXT_PAGE_OF_CONTRACT_INFO_TO_BE_READ,\
-    START_URL_REQUIREMENT_TO_BE_READ, \
-    START_URL_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
-    START_URL_CONTRACT_INFO_TO_BE_READ,\
     TIME_INTERVAL_MIN_SECOND_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
     TIME_INTERVAL_MAX_SECOND_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
-    USE_PROXY
+    USE_PROXY, \
+    WEBSITE_ID_TO_CRAWL
 from random import randint
 from sourcingdata.middleware.proxy_middleware import get_random_http_proxy, mark_unavailable_proxy, reget_proxy
+
 
 class SourcingdataSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -95,19 +91,6 @@ class SourcingdataDownloaderMiddleware(object):
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
-        next_page_string = ''
-        # 以指定首页作为判断依据
-        # 设置此次处理的是“采购需求”栏目
-        if request.url == START_URL_REQUIREMENT_TO_BE_READ:
-            next_page_string = NEXT_PAGE_OF_REQUIREMENT_TO_BE_READ
-        # 设置此次处理的是“采购公告”栏目
-        if request.url == START_URL_SOURCING_ANNOUNCEMENT_TO_BE_READ:
-            next_page_string = NEXT_PAGE_OF_SOURCING_ANNOUNCEMENT_TO_BE_READ
-            self.go_to_page_string = '//input[@name="pageIndex"]'
-        # 设置此次处理的是“采购合同”栏目
-        if request.url == START_URL_CONTRACT_INFO_TO_BE_READ:
-            next_page_string = NEXT_PAGE_OF_CONTRACT_INFO_TO_BE_READ
-            self.go_to_page_string = '//input[@id="pointPageIndexId"]'
 
         if self.current_session_access_counter == self.reset_session_pages:
             try:
@@ -127,7 +110,7 @@ class SourcingdataDownloaderMiddleware(object):
                     print('current page is: %s , data is collected' % self.current_page)
                     try:
                         print('before click')
-                        self.browser.find_element_by_xpath(next_page_string).click()
+                        self.browser.find_element_by_xpath(self.next_page_string).click()
                         print('after click')
                     except Exception as exceptinfo:
                         print(exceptinfo)
@@ -195,11 +178,6 @@ class SourcingdataDownloaderMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
     def __init__(self, timeout=None, service_args=[]):
-        # TODO: START_URL 如何按照不同类型的爬虫赋予不同类型的值
-        self.START_URL = START_URL_CONTRACT_INFO_TO_BE_READ
-        self.go_to_page_string = ''
-        self.go_to_page_string = '//input[@id="pointPageIndexId"]'
-        # TODO: 结束
         self.logger = getLogger(__name__)
         self.chrome_options = None
         self.first_time_browse = True
@@ -211,13 +189,17 @@ class SourcingdataDownloaderMiddleware(object):
         # 以下处理当前应该跳到第几页
         self.databaseConnection = DBKits()
         self.website_info_DB_operation = WebsiteInfoDBOperation(db_engine=self.databaseConnection)
-        self.query_condition = {WebsiteInfo.website_id == 4}
-        # self.query_condition = {WebsiteInfo.start_up_url == self.START_URL}
+        self.query_condition = {WebsiteInfo.website_id == WEBSITE_ID_TO_CRAWL}
         self.query_result = self.website_info_DB_operation.query_record(query_conditions=self.query_condition)
         self.current_proxy: ProxyInfo = None
         if self.query_result.count() == 1:
-            self.current_page = self.query_result.first().current_page_number
+            website_message: WebsiteInfo = self.query_result.first()
+            self.start_URL = website_message.start_up_url
+            self.current_page = website_message.current_page_number
+            self.go_to_page_string = website_message.website_goto_page_str
+            self.next_page_string = website_message.website_next_page_str
         else:
+            raise RuntimeError('No website ID:%d' % WEBSITE_ID_TO_CRAWL)
             self.current_page = 1
         self.new_browser()
 
@@ -248,7 +230,7 @@ class SourcingdataDownloaderMiddleware(object):
             except Exception as expt:
                 error(expt)
             try:
-                self.browser.get(self.START_URL)
+                self.browser.get(self.start_URL)
                 self.browser.find_element_by_xpath(self.go_to_page_string)
                 turn_page_script = 'turnOverPage(' + str(self.current_page) + ')'
                 self.browser.execute_script(turn_page_script)

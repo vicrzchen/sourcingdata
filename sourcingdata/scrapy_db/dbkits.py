@@ -5,12 +5,14 @@ from sourcingdata.scrapy_db.constvalue import DB_NAME, \
     DB_PASSWORD, \
     DB_USER, \
     SERVER_ADDRESS, \
-    SERVER_PORT
+    SERVER_PORT, \
+    MAX_DB_OPERATION_CATCH
 from sourcingdata.scrapy_db.models import RequirementToRead, \
     SourcingAnnouncementToRead, \
     WebsiteInfo, \
     ProxyInfo, \
-    ContractInfoToRead
+    ContractInfoToRead, \
+    ListItemsMap
 
 import logging
 
@@ -47,7 +49,16 @@ class DBOperationBase:
             self._db_session = Session(db_engine.engine)
             self._db_engine = db_engine
             self._row_data = None
+            self._operateion_times = 0
             pass
+        pass
+
+    def _commit_to_db(self):
+        if self._operateion_times >= MAX_DB_OPERATION_CATCH:
+            self._db_session.commit()
+            self._operateion_times = 0
+        else:
+            self._operateion_times += 1
         pass
 
     def insert_record(self, record_data=None, skip_duplicated_record=False):
@@ -61,7 +72,8 @@ class DBOperationBase:
             try:
                 new_row_data = self.map_record_to_row_data(record_data)
                 self._db_session.add(new_row_data)
-                self._db_session.commit()
+                # self._db_session.commit()
+                self._commit_to_db()
             except Exception as exce_info:
                 logging.error(exce_info)
         pass
@@ -77,7 +89,8 @@ class DBOperationBase:
                     # 去掉无用变量_sa_instance_state
                     record_dict.pop('_sa_instance_state', None)
                     record_set.update(record_dict)
-                    self._db_session.commit()
+                    # self._db_session.commit()
+                    self._commit_to_db()
                 except Exception as exce_info:
                     logging.error(exce_info)
                 pass
@@ -115,6 +128,9 @@ class DBOperationBase:
                 all_record = all_record.filter(i)
         return all_record
         pass
+
+    def __del__(self):
+        self._db_session.commit()
 
 
 class RequirementToReadDBOperation(DBOperationBase):
@@ -161,3 +177,11 @@ class ContractInfoToReadDBOperation(DBOperationBase):
         self.record_type = ContractInfoToRead
         pass
 
+
+class ListItemsMapDBOperation(DBOperationBase):
+    def __init__(self, db_engine: DBKits=None):
+        super(ListItemsMapDBOperation, self).__init__(db_engine,
+                                                      table_type_name='list_items_maps',
+                                                      data_struct_name='_ListItemsMaps')
+        self.record_type = ListItemsMap
+        pass

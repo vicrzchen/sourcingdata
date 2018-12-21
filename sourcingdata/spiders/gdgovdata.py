@@ -3,11 +3,12 @@ import scrapy
 from sourcingdata.scrapy_db.dbkits import RequirementToReadDBOperation, RequirementToRead
 from sourcingdata.scrapy_db.dbkits import SourcingAnnouncementToRead, SourcingAnnouncementToReadDBOperation
 from sourcingdata.scrapy_db.dbkits import ContractInfoToRead, ContractInfoToReadDBOperation
+from sourcingdata.scrapy_db.dbkits import ListItemsMap, ListItemsMapDBOperation
 from sourcingdata.scrapy_db.dbkits import DBKits
+from sourcingdata.kits.itemsprocessors import ListItemsProcessor
 from scrapy import Request
 from urllib.parse import urljoin, urlsplit
 from logging import error
-
 from sourcingdata.scrapy_db.constvalue import \
     START_URL_REQUIREMENT_TO_BE_READ, \
     START_URL_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
@@ -94,36 +95,29 @@ class GdgovdataSpider(scrapy.Spider):
         self.sourcing_announcement_to_read_DB_operation = \
             SourcingAnnouncementToReadDBOperation(db_engine=self.databaseConnection)
         self.contract_to_read_DB_operation = ContractInfoToReadDBOperation(db_engine=self.databaseConnection)
+        self.list_items_map_DB_Operation = ListItemsMapDBOperation(db_engine=self.databaseConnection)
         self.duplicate_record_qty = 0
+        self.items_processor = ListItemsProcessor()
+        self.items_processor.read_item_parameter(db_connection=self.databaseConnection, websiteID=4)
+
         pass
 
     def parse_contract_info_to_read(self, response):
+        # self.parse_for_list_object(website_id=4)
         stop_turn_page = False
         counter = 0
         for match_data in response.xpath('//div[@class="m_m_cont"]/table[@class="m_m_dljg"]/tbody/tr'):
             if counter > 0:
                 try:
                     url_data = ContractInfoToRead()
-                    url_data.purchasor = match_data.xpath('.//td[2]/@title')[0].extract()
-                    url_data.vendor = match_data.xpath('.//td[3]/@title')[0].extract()
-                    url_data.project_id = match_data.xpath('.//td[4]/@title')[0].extract()
-                    url_data.contract_name = match_data.xpath('.//td[5]/@title')[0].extract()
-                    url_data.contract_value = match_data.xpath('.//td[6]/text()')[0].extract().\
-                        replace('\n', '').replace(' ', '')
-                    url_data.contract_sign_date = match_data.xpath('.//td[7]/text()')[0].extract().\
-                        replace('\n', '').replace(' ', '')
-                    url_data.announce_date = match_data.xpath('.//td[8]/text()')[0].extract().\
-                        replace('\n', '').replace(' ', '')
-                    url_info = urlsplit(response.url)
-
-                    url_data.url_to_read = urljoin(url_info.scheme + '://' + url_info.netloc,
-                                                   match_data.xpath('.//td[9]/a/@href')[0].extract())
+                    url_data = self.items_processor.get_data(match_xpath=match_data, result_data=url_data)
                     query_conditions = {ContractInfoToRead.url_to_read == url_data.url_to_read}
                     if self.contract_to_read_DB_operation.query_record(query_conditions).count() == 0:
                         self.contract_to_read_DB_operation.insert_record(url_data,
                                                                          skip_duplicated_record=False)
                     else:
                         self.duplicate_record_qty += 1
+                    url_data = None
                     if self.duplicate_record_qty > 200:
                         stop_turn_page = True
                         print('reach duplicate')
@@ -134,4 +128,13 @@ class GdgovdataSpider(scrapy.Spider):
             counter += 1
         if not stop_turn_page:
             yield Request(response.url, callback=self.parse_contract_info_to_read, dont_filter=True)
+        pass
+
+    def parse_for_list_object(self, website_id):
+        stop_turn_page = False
+        counter = 0
+        query_conditions = {ListItemsMap.website_id == website_id}
+        recordsets = self.list_items_map_DB_Operation.query_record(query_conditions=query_conditions)
+        for i in recordsets:
+            print(1)
         pass
