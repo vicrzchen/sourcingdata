@@ -9,16 +9,21 @@ from scrapy import signals
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from scrapy.http import HtmlResponse
-from logging import getLogger, error
+from logging import getLogger, error, info
 from time import sleep
 from sourcingdata.scrapy_db.dbkits import DBKits, WebsiteInfoDBOperation, WebsiteInfo, ProxyInfo
 from sourcingdata.scrapy_db.constvalue import \
     TIME_INTERVAL_MIN_SECOND_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
     TIME_INTERVAL_MAX_SECOND_SOURCING_ANNOUNCEMENT_TO_BE_READ, \
     USE_PROXY, \
+    USE_USER_AGENT,\
     WEBSITE_ID_TO_CRAWL
 from random import randint
-from sourcingdata.middleware.proxy_middleware import get_random_http_proxy, mark_unavailable_proxy, reget_proxy
+from sourcingdata.middleware.proxy_middleware import \
+    get_random_http_proxy, \
+    mark_unavailable_proxy, \
+    reget_proxy, \
+    get_random_user_agent
 
 
 class SourcingdataSpiderMiddleware(object):
@@ -219,6 +224,10 @@ class SourcingdataDownloaderMiddleware(object):
                     if self.current_proxy is not None:
                         proxy_str = "--proxy-server=%s" % proxy_address
                         self.chrome_options.add_argument(proxy_str)
+                        print('current proxy is %s:%s' % (self.current_proxy.proxy_ip, self.current_proxy.proxy_port))
+                if USE_USER_AGENT:
+                    user_agent = get_random_user_agent()
+                    self.chrome_options.add_argument('user-agent=' + user_agent)
                 self.chrome_options.add_experimental_option("prefs", prefs)
                 self.first_time_browse = True
                 self.browser = webdriver.Chrome(executable_path=

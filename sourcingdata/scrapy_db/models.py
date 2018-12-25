@@ -7,18 +7,31 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
+class AcceptanceToRead(Base):
+    __tablename__ = 'acceptance_to_read'
+
+    acceptance_id = Column(INTEGER(64), primary_key=True, unique=True)
+    contract_name = Column(String(1000))
+    project_id = Column(String(200))
+    contract_sign_date = Column(String(20))
+    acceptance_date = Column(String(20))
+    acceptance_people = Column(String(200))
+    acceptance_result = Column(String(100))
+    acceptance_detail_url = Column(String(200))
+
+
 class ContractInfoToRead(Base):
     __tablename__ = 'contract_info_to_read'
 
     contract_info_id = Column(INTEGER(64), primary_key=True, unique=True)
     purchasor = Column(String(200))
     vendor = Column(String(200))
-    project_id = Column(String(200))
+    project_id = Column(String(200), index=True)
     contract_name = Column(String(1000))
     contract_value = Column(String(100))
     contract_sign_date = Column(String(20))
     announce_date = Column(String(20))
-    url_to_read = Column(String(1000))
+    url_to_read = Column(String(200), index=True)
 
 
 class ListItemsMap(Base):
@@ -115,8 +128,8 @@ class SourcingPlansToRead(Base):
     goods_qty = Column(INTEGER(100))
     project_value = Column(String(100))
     purchasing_method = Column(String(100))
-    progress_url = Column(String(1000))
-    detail_url = Column(String(1000))
+    progress_url = Column(String(200))
+    detail_url = Column(String(200), index=True)
 
 
 class Vendor(Base):
@@ -141,3 +154,5 @@ class WebsiteInfo(Base):
     website_group_id = Column(INTEGER(64))
     website_next_page_str = Column(String(1000))
     website_goto_page_str = Column(String(1000))
+    website_match_str = Column(String(1000))
+    object_name = Column(String(100))

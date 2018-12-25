@@ -1,0 +1,11 @@
+WebsiteID,result_is_list,struct_member_name,xpath_string,trim_enter,trim_space,is_url,is_abstract_url
+9,True,0,purchasor,.//td[2]/@title,False,False,False,False
+9,True,0,project_id,.//td[3]/text(),True,True,False,False
+9,True,0,project_name,.//td[4]/@title,False,False,False,False
+9,True,0,goods_type,.//td[5]/@title,False,False,False,False
+9,True,0,project_value,.//td[6]/text(),True,True,False,False
+9,True,0,good_qty,.//td[7]/text(),True,True,False,False
+9,True,0,plan_purchasing_date,.//td[8]/text(),True,True,False,False
+9,True,0,purchasing_method,.//td[9]/text(),True,True,False,False
+9,True,0,progress_url,.//td[10]/a/@href,False,False,True,False
+9,True,0,detail_url,.//td[11]/a/@href,False,False,True,False

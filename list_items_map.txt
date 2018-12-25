@@ -6,4 +6,4 @@ WebsiteID,result_is_list,struct_member_name,xpath_string,trim_enter,trim_space,i
 4,True,0,contract_value,.//td[6]/text(),False,False,False,False
 4,True,0,contract_sign_date,.//td[7]/text(),True,True,False,False
 4,True,0,announce_date,.//td[8]/text(),True,True,False,False
-4,True,0,url_to_read,.//td[9]/a/@href,,False,False,True,False
+4,True,0,url_to_read,.//td[9]/a/@href,False,False,True,False

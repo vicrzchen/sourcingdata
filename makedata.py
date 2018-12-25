@@ -4,7 +4,10 @@ from sourcingdata.scrapy_db.dbkits import DBKits, \
     ListItemsMapDBOperation
 from sourcingdata.scrapy_db.models import WebsiteInfo, ProxyInfo, ListItemsMap
 from datetime import datetime
-from sourcingdata.scrapy_db.constvalue import START_URL_CONTRACT_INFO_TO_BE_READ
+from sourcingdata.scrapy_db.constvalue import \
+    START_URL_CONTRACT_INFO_TO_BE_READ, \
+    START_URL_SOURCING_PLAN_TO_BE_READ, \
+    START_URL_ACCEPT_TO_BE_READ
 from sqlalchemy import DateTime
 
 # 设置网页信息
@@ -65,6 +68,7 @@ def make_website_info_contract():
     database_operation = WebsiteInfoDBOperation(db_engine=database_connection)
     database_operation.insert_record(website_data, skip_duplicated_record=True)
 
+
 def test_db():
     conditions = {ProxyInfo.status == 1}
     database_connection = DBKits()
@@ -72,15 +76,20 @@ def test_db():
     print(proxy_operation.query_record(conditions).count())
     pass
 
-def make_website_items():
-    filename_test = './list_items_map.txt'
+
+# make contract to read items mapping data
+def make_website_items_mapping(website_id=-1):
+    filename_test = './list_items_map4sourcing_plan.txt'
     database_connection = DBKits()
     database_operation = WebsiteInfoDBOperation(db_engine=database_connection)
     line_count = 0
     for file_content in open(filename_test, 'r').readlines():
         if line_count > 0:
             list_item = ListItemsMap()
-            list_item.website_id = int(file_content.split(',')[0])
+            if website_id == -1:
+                list_item.website_id = int(file_content.split(',')[0])
+            else:
+                list_item.website_id = website_id
             if file_content.split(',')[1] == 'True':
                 list_item.result_is_list = True
             else:
@@ -107,3 +116,32 @@ def make_website_items():
             database_operation.insert_record(record_data=list_item, skip_duplicated_record=False)
             list_item = None
         line_count += 1
+
+def make_website_info_sourcing_plan():
+    website_data = WebsiteInfo()
+    # 设置信息
+    website_data.website_name = '广东省采购中心-省直-采购计划'
+    website_data.start_up_url = START_URL_SOURCING_PLAN_TO_BE_READ
+    website_data.website_crawl_scope = 'gdgpo.gov.cn'
+    website_data.current_page_number = 1
+    website_data.website_next_page_str = '//a[@class="aborder2"]/span[contains(.,"下一页")]'
+    website_data.website_goto_page_str = '//input[@id="pointPageIndexId"]'
+    # 设置信息结束
+    database_connection = DBKits()
+    database_operation = WebsiteInfoDBOperation(db_engine=database_connection)
+    database_operation.insert_record(website_data, skip_duplicated_record=True)
+
+
+def make_website_info_accept():
+    website_data = WebsiteInfo()
+    # 设置信息
+    website_data.website_name = '广东省采购中心-省直-履约验收'
+    website_data.start_up_url = START_URL_ACCEPT_TO_BE_READ
+    website_data.website_crawl_scope = 'gdgpo.gov.cn'
+    website_data.current_page_number = 1
+    website_data.website_next_page_str = '//a[@class="aborder2"]/span[contains(.,"下一页")]'
+    website_data.website_goto_page_str = '//input[@id="pointPageIndexId"]'
+    # 设置信息结束
+    database_connection = DBKits()
+    database_operation = WebsiteInfoDBOperation(db_engine=database_connection)
+    database_operation.insert_record(website_data, skip_duplicated_record=True)

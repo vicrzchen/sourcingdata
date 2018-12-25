@@ -40,6 +40,8 @@ class ListItemsProcessor:
                 match_xpath_item = match_xpath_item.extract()
                 if item_detail.trim_enter:
                     match_xpath_item = match_xpath_item.replace('\n', '')
+                    # TODO: 需要在数据库中的list_items_maps可能需要增加一列属性用于剔除\t
+                    match_xpath_item = match_xpath_item.replace('\t', '')
                 if item_detail.trim_space:
                     match_xpath_item = match_xpath_item.replace(' ', '')
                 if item_detail.is_url:

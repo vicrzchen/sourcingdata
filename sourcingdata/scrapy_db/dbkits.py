@@ -6,13 +6,16 @@ from sourcingdata.scrapy_db.constvalue import DB_NAME, \
     DB_USER, \
     SERVER_ADDRESS, \
     SERVER_PORT, \
-    MAX_DB_OPERATION_CATCH
+    MAX_DB_OPERATION_CACHE
+
 from sourcingdata.scrapy_db.models import RequirementToRead, \
     SourcingAnnouncementToRead, \
     WebsiteInfo, \
     ProxyInfo, \
     ContractInfoToRead, \
-    ListItemsMap
+    ListItemsMap, \
+    SourcingPlansToRead, \
+    AcceptanceToRead
 
 import logging
 
@@ -42,7 +45,10 @@ class DBOperationBase:
 
     # table_type_name = table name in DB
     # data_struct_name = data struct var for data storage
-    def __init__(self, db_engine: DBKits=None, table_type_name: str= None, data_struct_name: str=None):
+    def __init__(self, db_engine: DBKits=None,
+                 table_type_name: str=None,
+                 data_struct_name: str=None,
+                 max_db_operation_cache=MAX_DB_OPERATION_CACHE):
         if not(DBKits is None):
             setattr(self, data_struct_name, getattr(db_engine.Base.classes, table_type_name))
             self.__data_struct_name = data_struct_name
@@ -50,11 +56,12 @@ class DBOperationBase:
             self._db_engine = db_engine
             self._row_data = None
             self._operateion_times = 0
+            self._max_db_operation_catch = max_db_operation_cache
             pass
         pass
 
     def _commit_to_db(self):
-        if self._operateion_times >= MAX_DB_OPERATION_CATCH:
+        if self._operateion_times >= self._max_db_operation_catch - 1:
             self._db_session.commit()
             self._operateion_times = 0
         else:
@@ -72,8 +79,8 @@ class DBOperationBase:
             try:
                 new_row_data = self.map_record_to_row_data(record_data)
                 self._db_session.add(new_row_data)
-                # self._db_session.commit()
-                self._commit_to_db()
+                self._db_session.commit()
+                # self._commit_to_db()
             except Exception as exce_info:
                 logging.error(exce_info)
         pass
@@ -141,6 +148,11 @@ class RequirementToReadDBOperation(DBOperationBase):
         self.record_type = RequirementToRead
         pass
 
+    def get_duplicate_condition(self, compare_obj=None):
+        if compare_obj is not None:
+            return {RequirementToRead.url_to_read == compare_obj.url_to_read}
+        return None
+
 
 class SourcingAnnouncementToReadDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
@@ -150,12 +162,18 @@ class SourcingAnnouncementToReadDBOperation(DBOperationBase):
         self.record_type = SourcingAnnouncementToRead
         pass
 
+    def get_duplicate_condition(self, compare_obj=None):
+        if compare_obj is not None:
+            return {SourcingAnnouncementToRead.project_url == compare_obj.project_url}
+        return None
+
 
 class WebsiteInfoDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
         super(WebsiteInfoDBOperation, self).__init__(db_engine,
                                                      table_type_name='website_info',
-                                                     data_struct_name='_WebsiteInfo')
+                                                     data_struct_name='_WebsiteInfo',
+                                                     max_db_operation_cache=1)
         self.record_type = WebsiteInfo
         pass
 
@@ -164,7 +182,8 @@ class ProxyInfoDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
         super(ProxyInfoDBOperation, self).__init__(db_engine,
                                                    table_type_name='proxy_info',
-                                                   data_struct_name='_ProxyInfo')
+                                                   data_struct_name='_ProxyInfo',
+                                                   max_db_operation_cache=1)
         self.record_type = ProxyInfo
         pass
 
@@ -177,11 +196,46 @@ class ContractInfoToReadDBOperation(DBOperationBase):
         self.record_type = ContractInfoToRead
         pass
 
+    def get_duplicate_condition(self, compare_obj=None):
+        if compare_obj is not None:
+            return {ContractInfoToRead.url_to_read == compare_obj.url_to_read}
+        return None
+
 
 class ListItemsMapDBOperation(DBOperationBase):
     def __init__(self, db_engine: DBKits=None):
         super(ListItemsMapDBOperation, self).__init__(db_engine,
                                                       table_type_name='list_items_maps',
-                                                      data_struct_name='_ListItemsMaps')
+                                                      data_struct_name='_ListItemsMaps',
+                                                      max_db_operation_cache=1)
         self.record_type = ListItemsMap
         pass
+
+
+class SourcingPlanToReadDBOperation(DBOperationBase):
+    def __init__(self, db_engine: DBKits=None):
+        super(SourcingPlanToReadDBOperation, self).__init__(db_engine,
+                                                            table_type_name='sourcing_plans_to_read',
+                                                            data_struct_name='_SourcingPlanToRead')
+        self.record_type = SourcingPlansToRead
+        pass
+
+    def get_duplicate_condition(self, compare_obj=None):
+        if compare_obj is not None:
+            return {SourcingPlansToRead.detail_url == compare_obj.detail_url}
+        return None
+
+
+class AcceptanceToReadDBOperation(DBOperationBase):
+    def __init__(self, db_engine: DBKits=None):
+        super(AcceptanceToReadDBOperation, self).__init__(db_engine,
+                                                          table_type_name='acceptance_to_read',
+                                                          data_struct_name='_AcceptanceToRead')
+        self.record_type = AcceptanceToRead
+        pass
+
+    def get_duplicate_condition(self, compare_obj=None):
+        if compare_obj is not None:
+
+            return {AcceptanceToRead.acceptance_detail_url == compare_obj.acceptance_detail_url}
+        return None
